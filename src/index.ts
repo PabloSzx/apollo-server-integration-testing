@@ -1,23 +1,22 @@
 // @flow
 
-import express from 'express';
-import httpMocks from 'node-mocks-http';
-import { print } from 'graphql';
 import { convertNodeHttpToRequest, runHttpQuery } from 'apollo-server-core';
-
 import { ApolloServer } from 'apollo-server-express';
-import { DocumentNode } from 'graphql';
+import express from 'express';
+import { DocumentNode, print } from 'graphql';
+import httpMocks, { RequestOptions, ResponseOptions } from 'node-mocks-http';
 
-const mockRequest = (options = {}) =>
+const mockRequest = (options: RequestOptions = {}) =>
   httpMocks.createRequest({
     method: 'POST',
     ...options
   });
 
-const mockResponse = (options = {}) => httpMocks.createResponse(options);
+const mockResponse = (options: ResponseOptions = {}) =>
+  httpMocks.createResponse(options);
 
 type StringOrAst = string | DocumentNode;
-type Options = { variables?: object};
+type Options = { variables?: object };
 
 type TestClientConfig = {
   // The ApolloServer instance that will be used for handling the queries you run in your tests.
@@ -28,13 +27,13 @@ type TestClientConfig = {
   // and you want to inject data into that `req` object.
   // If you don't pass anything here, we provide a default request mock object for you.
   // See https://github.com/howardabrams/node-mocks-http#createrequest for all the default values that are included.
-  extendMockRequest?: {};
+  extendMockRequest?: RequestOptions;
   // Extends the mocked Response object with additional keys.
   // Useful when your apolloServer `context` option is a callback that operates on the passed in `res` key,
   // and you want to inject data into that `res` object (such as `res.locals`).
   // If you don't pass anything here, we provide a default response mock object for you.
   // See https://www.npmjs.com/package/node-mocks-http#createresponse for all the default values that are included.
-  extendMockResponse?: {};
+  extendMockResponse?: ResponseOptions;
 };
 
 // This function takes in an apollo server instance and returns a function that you can use to run operations
@@ -67,9 +66,35 @@ export const createTestClient = ({
   const app = express();
   apolloServer.applyMiddleware({ app });
 
-  const test = async (operation: StringOrAst, {variables}: Options = {}) => {
-    const req = mockRequest(extendMockRequest);
-    const res = mockResponse(extendMockResponse);
+  let mockRequestOptions = extendMockRequest;
+  let mockResponseOptions = extendMockResponse;
+
+  
+  /**
+   * Set the options after TestClient creation
+   * Useful when you don't want to create a new instance just for a specific change in the request or response.
+   *  */ 
+  const setOptions = ({
+    request,
+    response
+  }: {
+    request?: RequestOptions;
+    response?: ResponseOptions;
+  }) => {
+    if (request) {
+      mockRequestOptions = request;
+    }
+    if (response) {
+      mockResponseOptions = response;
+    }
+  };
+
+  const test = async <T = any>(
+    operation: StringOrAst,
+    { variables }: Options = {}
+  ) => {
+    const req = mockRequest(mockRequestOptions);
+    const res = mockResponse(mockResponseOptions);
 
     const graphQLOptions = await apolloServer.createGraphQLServerOptions(
       req,
@@ -87,11 +112,12 @@ export const createTestClient = ({
       request: convertNodeHttpToRequest(req)
     });
 
-    return JSON.parse(graphqlResponse);
+    return JSON.parse(graphqlResponse) as T;
   };
 
   return {
     query: test,
-    mutate: test
+    mutate: test,
+    setOptions
   };
 };

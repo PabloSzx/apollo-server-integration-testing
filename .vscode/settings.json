@@ -1,0 +1,5 @@
+{
+    "editor.formatOnSave": false,
+    "importSorter.generalConfiguration.sortImportsInDirectory": false,
+    "importSorter.importStringConfiguration.quoteMark": "single"
+}
