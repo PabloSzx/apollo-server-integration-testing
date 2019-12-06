@@ -68,11 +68,11 @@ export type TestSetOptions = (options: {
 //   }
 // });
 // ```
-export const createTestClient = ({
+export function createTestClient({
   apolloServer,
   extendMockRequest = {},
   extendMockResponse = {}
-}: TestClientConfig) => {
+}: TestClientConfig) {
   const app = express();
   apolloServer.applyMiddleware({ app });
 
@@ -130,4 +130,4 @@ export const createTestClient = ({
     mutate: test,
     setOptions
   };
-};
+}
