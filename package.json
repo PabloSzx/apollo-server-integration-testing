@@ -1,6 +1,6 @@
 {
   "name": "@pablosz/apollo-server-integration-testing",
-  "version": "2.3.3",
+  "version": "2.3.4",
   "private": false,
   "description": "Test helper for writing apollo-server integration tests",
   "keywords": [

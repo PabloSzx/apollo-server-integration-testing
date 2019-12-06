@@ -15,10 +15,10 @@ const mockRequest = (options: RequestOptions = {}) =>
 const mockResponse = (options: ResponseOptions = {}) =>
   httpMocks.createResponse(options);
 
-type StringOrAst = string | DocumentNode;
-type Options<T extends object> = { variables?: T };
+export type StringOrAst = string | DocumentNode;
+export type Options<T extends object> = { variables?: T };
 
-type TestClientConfig = {
+export type TestClientConfig = {
   // The ApolloServer instance that will be used for handling the queries you run in your tests.
   // Must be an instance of the ApolloServer class from `apollo-server-express` (or a compatible subclass).
   apolloServer: ApolloServer;
@@ -35,6 +35,16 @@ type TestClientConfig = {
   // See https://www.npmjs.com/package/node-mocks-http#createresponse for all the default values that are included.
   extendMockResponse?: ResponseOptions;
 };
+
+export type TestQuery = <T extends object = {}, V extends object = {}>(
+  operation: StringOrAst,
+  { variables }?: Options<V>
+) => Promise<T>;
+
+export type TestSetOptions = (options: {
+  request?: RequestOptions;
+  response?: ResponseOptions;
+}) => void;
 
 // This function takes in an apollo server instance and returns a function that you can use to run operations
 // against your schema, and assert on the results.
@@ -74,22 +84,22 @@ export const createTestClient = ({
    * Useful when you don't want to create a new instance just for a specific change in the request or response.
    *  */
 
-  function setOptions({
+  const setOptions: TestSetOptions = ({
     request,
     response
   }: {
     request?: RequestOptions;
     response?: ResponseOptions;
-  }) {
+  }) => {
     if (request) {
       mockRequestOptions = request;
     }
     if (response) {
       mockResponseOptions = response;
     }
-  }
+  };
 
-  const test = async <T extends object = {}, V extends object = {}>(
+  const test: TestQuery = async <T extends object = {}, V extends object = {}>(
     operation: StringOrAst,
     { variables }: Options<V> = {}
   ) => {
