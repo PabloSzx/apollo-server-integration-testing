@@ -1,6 +1,6 @@
 {
   "name": "@pablosz/apollo-server-integration-testing",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "description": "Test helper for writing apollo-server integration tests",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

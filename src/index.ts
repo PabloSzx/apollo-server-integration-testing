@@ -16,7 +16,7 @@ const mockResponse = (options: ResponseOptions = {}) =>
   httpMocks.createResponse(options);
 
 type StringOrAst = string | DocumentNode;
-type Options = { variables?: object };
+type Options<T extends object> = { variables?: T };
 
 type TestClientConfig = {
   // The ApolloServer instance that will be used for handling the queries you run in your tests.
@@ -69,29 +69,29 @@ export const createTestClient = ({
   let mockRequestOptions = extendMockRequest;
   let mockResponseOptions = extendMockResponse;
 
-  
   /**
    * Set the options after TestClient creation
    * Useful when you don't want to create a new instance just for a specific change in the request or response.
-   *  */ 
-  const setOptions = ({
+   *  */
+
+  function setOptions({
     request,
     response
   }: {
     request?: RequestOptions;
     response?: ResponseOptions;
-  }) => {
+  }) {
     if (request) {
       mockRequestOptions = request;
     }
     if (response) {
       mockResponseOptions = response;
     }
-  };
+  }
 
-  const test = async <T = any>(
+  const test = async <T extends object = {}, V extends object = {}>(
     operation: StringOrAst,
-    { variables }: Options = {}
+    { variables }: Options<V> = {}
   ) => {
     const req = mockRequest(mockRequestOptions);
     const res = mockResponse(mockResponseOptions);
